@@ -1,0 +1,117 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span><i class="layui-icon layui-icon-list"></i> 菜单管理</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="search-bar">
+            <div style="flex:1;">菜单独立于功能权限，专用于 UI 导航展示。支持两级树形菜单结构。禁用的菜单将对所有角色不可见。</div>
+            <a href="/admin/menu/add" class="layui-btn layui-btn-sm"><i class="layui-icon layui-icon-add-1"></i> 新增菜单</a>
+        </div>
+
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:50px;">ID</th>
+                    <th style="width:120px;">编码</th>
+                    <th>菜单名称</th>
+                    <th>路由地址</th>
+                    <th style="width:50px;">排序</th>
+                    <th style="width:70px;">状态</th>
+                    <th style="width:150px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in menus %}
+                <tr>
+                    <td>{{ m["id"] }}</td>
+                    <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;">{{ m["code"] }}</code></td>
+                    <td>
+                        {% if m["parent_id"] %}
+                        <span style="padding-left:20px;">&boxur;</span>
+                        {% end %}
+                        {% if m["icon"] %}<i class="layui-icon {{ m['icon'] }}"></i> {% end %}
+                        {{ m["name"] }}
+                    </td>
+                    <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;">{{ m["path"] or "—" }}</code></td>
+                    <td>{{ m["sort_order"] }}</td>
+                    <td>
+                        {% if m["is_enabled"] %}
+                        <span class="layui-badge layui-bg-green">启用</span>
+                        {% else %}
+                        <span class="layui-badge">禁用</span>
+                        {% end %}
+                    </td>
+                    <td>
+                        <div class="layui-btn-group">
+                            <a href="/admin/menu/edit?id={{ m['id'] }}" class="layui-btn layui-btn-xs layui-btn-normal"><i class="layui-icon layui-icon-edit"></i></a>
+                            <button class="layui-btn layui-btn-xs {% if m['is_enabled'] %}layui-btn-warm{% else %}layui-btn-normal{% end %} btn-toggle" data-id="{{ m['id'] }}" title="{{ '禁用' if m['is_enabled'] else '启用' }}">
+                                <i class="layui-icon {% if m['is_enabled'] %}layui-icon-pause{% else %}layui-icon-play{% end %}"></i>
+                            </button>
+                            <button class="layui-btn layui-btn-xs layui-btn-danger btn-delete" data-id="{{ m['id'] }}" data-name="{{ m['name'] }}">
+                                <i class="layui-icon layui-icon-delete"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+
+        <div style="text-align:center;"><div id="pagination"></div></div>
+    </div>
+</div>
+
+<form id="form-toggle" method="post" action="/admin/menu/toggle" style="display:none;">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="id" id="toggle-id">
+</form>
+<form id="form-delete" method="post" action="/admin/menu/delete" style="display:none;">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="id" id="delete-id">
+</form>
+{% end %}
+
+{% block admin_scripts %}
+<script>
+layui.use(['laypage', 'layer'], function(){
+    var laypage = layui.laypage;
+    var layer = layui.layer;
+    var $ = layui.$;
+
+    laypage.render({
+        elem: 'pagination',
+        count: {{ total }},
+        limit: 50,
+        curr: {{ page }},
+        groups: 5,
+        layout: ['count', 'prev', 'page', 'next', 'skip'],
+        jump: function(obj, first){
+            if(!first) location.href = '/admin/menu?page=' + obj.curr;
+        }
+    });
+
+    $('.btn-toggle').click(function(){
+        $('#toggle-id').val($(this).data('id'));
+        $('#form-toggle').submit();
+    });
+    $('.btn-delete').click(function(){
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        layer.confirm('确定删除菜单 <b>' + name + '</b> 吗？子菜单将一并删除。', {
+            icon: 3, title: '删除确认', btn: ['确定删除', '取消']
+        }, function(){
+            $('#delete-id').val(id);
+            $('#form-delete').submit();
+        });
+    });
+
+    var msg = new URLSearchParams(location.search).get('msg');
+    if(msg) layer.msg(msg, {icon: 1, time: 2000});
+});
+</script>
+{% end %}

@@ -1,0 +1,58 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-row layui-col-space12">
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-body stat-box">
+                <div class="stat-number">{{ user_count }}</div>
+                <div class="stat-label">系统用户数</div>
+                <div class="stat-desc">含管理员账号</div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-body stat-box">
+                <div class="stat-number">{{ role_count }}</div>
+                <div class="stat-label">角色数</div>
+                <div class="stat-desc">系统角色+自定义角色</div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-body stat-box">
+                <div class="stat-number">{{ func_count }}</div>
+                <div class="stat-label">功能权限码</div>
+                <div class="stat-desc">后端权限控制</div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md3">
+        <div class="layui-card">
+            <div class="layui-card-body stat-box">
+                <div class="stat-number">{{ menu_count }}</div>
+                <div class="stat-label">菜单项</div>
+                <div class="stat-desc">前端导航菜单</div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            {% if is_admin %}
+            <div class="layui-card-header">欢迎使用管理后台</div>
+            {% end %}
+            <div class="layui-card-body">
+                <p>欢迎回来，<strong>{{ username }}</strong>！</p>
+                <p style="color:#666;margin-top:10px;">
+                    瞭望与问数系统（DataFinderAgentOS）是一个基于 AI Agent 的数据查询与分析平台。
+                    您可以通过左侧菜单管理用户、角色、功能和菜单。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

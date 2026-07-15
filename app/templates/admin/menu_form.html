@@ -1,0 +1,81 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header">{{ "编辑菜单" if menu else "新增菜单" }}</div>
+    <div class="layui-card-body" style="max-width:550px;">
+        <form class="layui-form" method="post" action="/admin/menu/edit">
+            {% module xsrf_form_html() %}
+            {% if menu %}
+            <input type="hidden" name="id" value="{{ menu['id'] }}">
+            {% end %}
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">菜单编码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="code" value="{{ menu['code'] if menu else '' }}"
+                           required lay-verify="required" placeholder="如：dashboard" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">唯一标识，如 dashboard、user_mgr</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">菜单名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="{{ menu['name'] if menu else '' }}"
+                           required lay-verify="required" placeholder="如：控制台" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">路由地址</label>
+                <div class="layui-input-block">
+                    <input type="text" name="path" value="{{ menu['path'] if menu else '' }}"
+                           placeholder="如：/admin/user" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">图标</label>
+                <div class="layui-input-block">
+                    <input type="text" name="icon" value="{{ menu['icon'] if menu else '' }}"
+                           placeholder="如：layui-icon-user" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">Layui 图标类名</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">父级菜单</label>
+                <div class="layui-input-block">
+                    <select name="parent_id">
+                        <option value="">顶级菜单</option>
+                        {% for p in parents %}
+                        <option value="{{ p['id'] }}"
+                            {% if menu and menu['parent_id'] == p['id'] %}selected{% end %}>
+                            {{ p['name'] }}
+                        </option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort_order" value="{{ menu['sort_order'] if menu else '99' }}"
+                           class="layui-input" style="width:100px;">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="submit" class="layui-btn" lay-submit lay-filter="save">保存</button>
+                    <a href="/admin/menu" class="layui-btn layui-btn-primary">返回</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% end %}

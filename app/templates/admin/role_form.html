@@ -1,0 +1,40 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header">{{ "编辑角色" if role else "新增角色" }}</div>
+    <div class="layui-card-body" style="max-width:500px;">
+        <form class="layui-form" method="post" action="/admin/role/edit">
+            {% module xsrf_form_html() %}
+            {% if role %}
+            <input type="hidden" name="id" value="{{ role['id'] }}">
+            {% end %}
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">角色名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="{{ role['name'] if role else '' }}"
+                           required lay-verify="required" placeholder="请输入角色名称" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">描述</label>
+                <div class="layui-input-block">
+                    <input type="text" name="description" value="{{ role['description'] if role else '' }}"
+                           placeholder="角色描述" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="submit" class="layui-btn" lay-submit lay-filter="save">保存</button>
+                    <a href="/admin/role" class="layui-btn layui-btn-primary">返回</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% end %}

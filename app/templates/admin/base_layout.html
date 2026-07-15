@@ -1,0 +1,108 @@
+{% extends "../base.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block content %}
+<style>
+    .admin-layout { min-height: 100vh; }
+    .admin-header { background: #23262E; height: 60px; line-height: 60px; color: #fff; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-header .logo { font-size: 20px; font-weight: bold; color: #5FB878; }
+    .admin-header .logo-sub { color: #888; font-size: 12px; margin-left: 8px; }
+    .admin-header .logo-sep { color: #555; margin: 0 6px; }
+    .admin-header .user-info { color: #aaa; font-size: 14px; }
+    .admin-header .user-info a { color: #b0b9cc; margin-left: 15px; text-decoration: none; }
+    .admin-header .user-info a:hover { color: #fff; }
+    .admin-side { position: fixed; top: 60px; left: 0; bottom: 0; width: 200px; background: #2F4056; color: #a7b1c2; overflow-y: auto; }
+    .admin-side .layui-nav { background: transparent; }
+    .admin-side .layui-nav .layui-nav-item a { color: #d4d9e2; }
+    .admin-side .layui-nav .layui-nav-item .layui-icon { margin-right: 8px; font-size: 16px; }
+    .admin-side .layui-nav .layui-nav-child { background: #263445; }
+    .admin-side .layui-nav .layui-nav-child dd a { padding-left: 45px; color: #a7b1c2; }
+    .admin-side .layui-nav .layui-nav-child dd a:hover { color: #fff; background: #1E9FFF; }
+    .admin-side .layui-nav .layui-nav-itemed > .layui-nav-child { display: block; }
+    .admin-body { margin-left: 200px; padding: 15px; background: #f0f2f5; min-height: calc(100vh - 60px); }
+    .admin-body .layui-card { margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .admin-body .layui-card-header { background: #fafafa; font-weight: 500; border-bottom: 1px solid #f0f0f0; }
+    .stat-box { text-align: center; padding: 24px 10px; transition: transform 0.2s; cursor: default; }
+    .stat-box:hover { transform: translateY(-2px); }
+    .stat-box .stat-number { font-size: 40px; font-weight: bold; color: #1E9FFF; line-height: 1.2; }
+    .stat-box .stat-label { font-size: 14px; color: #666; margin-top: 8px; }
+    .stat-box .stat-desc { font-size: 12px; color: #aaa; margin-top: 4px; }
+    .admin-body .layui-table td { vertical-align: middle; }
+    .admin-body .layui-badge { height: auto; line-height: 1.4; padding: 3px 8px; vertical-align: middle; }
+    .admin-body .layui-btn-group { display: inline-flex; align-items: center; gap: 3px; }
+    .admin-body .layui-btn-group .layui-btn { margin-left: 0 !important; }
+    .admin-body .layui-laypage { display: inline-block; margin: 15px auto 0; }
+    .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+    .search-bar .layui-input { width: 220px; height: 36px; }
+    .search-bar .layui-btn { height: 36px; line-height: 36px; }
+    .msg-tip { color: #5FB878; margin-left: 10px; }
+    .empty-state { text-align: center; padding: 40px; color: #999; }
+    .empty-state .layui-icon { font-size: 48px; }
+</style>
+
+<div class="admin-layout">
+    <div class="admin-header">
+        <div>
+            <span class="logo">&#x1F52D; 瞭望与问数系统</span>
+            <span class="logo-sep">|</span>
+            <span class="logo-sub">DataFinderAgentOS v0.2</span>
+        </div>
+        <div class="user-info">
+            <span>&#x1F464; {{ username }}</span>
+            <a href="/logout">退出登录</a>
+        </div>
+    </div>
+
+    <div class="admin-side">
+        <ul class="layui-nav layui-nav-tree" lay-filter="admin-nav">
+            {% for menu in nav_menus %}
+                {% if menu.get("children") %}
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                        {% if menu.get("icon") %}<i class="layui-icon {{ menu['icon'] }}"></i>{% end %}
+                        {{ menu["name"] }}
+                    </a>
+                    <dl class="layui-nav-child">
+                        {% for child in menu["children"] %}
+                        <dd><a href="{{ child['path'] or 'javascript:;' }}">
+                            {% if child.get("icon") %}<i class="layui-icon {{ child['icon'] }}"></i>{% end %}
+                            {{ child["name"] }}
+                        </a></dd>
+                        {% end %}
+                    </dl>
+                </li>
+                {% else %}
+                <li class="layui-nav-item {% if handler.request.path == menu['path'] %}layui-this{% end %}">
+                    <a href="{{ menu['path'] or 'javascript:;' }}">
+                        {% if menu.get("icon") %}<i class="layui-icon {{ menu['icon'] }}"></i>{% end %}
+                        {{ menu["name"] }}
+                    </a>
+                </li>
+                {% end %}
+            {% end %}
+        </ul>
+    </div>
+
+    <div class="admin-body">
+        {% block admin_content %}{% end %}
+    </div>
+</div>
+{% end %}
+
+{% block scripts %}
+<script>
+layui.use('element', function(){
+    var element = layui.element;
+    var path = location.pathname;
+    var $ = layui.$;
+    $('.admin-side a').each(function(){
+        if($(this).attr('href') === path){
+            $(this).parent().addClass('layui-this');
+            $(this).parents('.layui-nav-item').addClass('layui-nav-itemed');
+        }
+    });
+});
+</script>
+{% block admin_scripts %}{% end %}
+{% end %}

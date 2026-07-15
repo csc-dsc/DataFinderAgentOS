@@ -1,0 +1,111 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span><i class="layui-icon layui-icon-template-1"></i> 功能权限管理</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="search-bar">
+            <div style="flex:1;">管理功能权限码（code），如 <code>user:view</code>、<code>role:edit</code>，用于后端权限校验。禁用功能将自动移除所有角色的该权限。</div>
+            <a href="/admin/function/add" class="layui-btn layui-btn-sm"><i class="layui-icon layui-icon-add-1"></i> 新增功能</a>
+        </div>
+
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:50px;">ID</th>
+                    <th style="width:140px;">权限编码</th>
+                    <th>功能名称</th>
+                    <th style="width:100px;">所属模块</th>
+                    <th style="width:50px;">排序</th>
+                    <th style="width:70px;">状态</th>
+                    <th style="width:150px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in functions %}
+                <tr>
+                    <td>{{ f["id"] }}</td>
+                    <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;">{{ f["code"] }}</code></td>
+                    <td>{{ f["name"] }}</td>
+                    <td>{{ f["module"] or "—" }}</td>
+                    <td>{{ f["sort_order"] }}</td>
+                    <td>
+                        {% if f["is_enabled"] %}
+                        <span class="layui-badge layui-bg-green">启用</span>
+                        {% else %}
+                        <span class="layui-badge">禁用</span>
+                        {% end %}
+                    </td>
+                    <td>
+                        <div class="layui-btn-group">
+                            <a href="/admin/function/edit?id={{ f['id'] }}" class="layui-btn layui-btn-xs layui-btn-normal"><i class="layui-icon layui-icon-edit"></i></a>
+                            <button class="layui-btn layui-btn-xs {% if f['is_enabled'] %}layui-btn-warm{% else %}layui-btn-normal{% end %} btn-toggle" data-id="{{ f['id'] }}" title="{{ '禁用' if f['is_enabled'] else '启用' }}">
+                                <i class="layui-icon {% if f['is_enabled'] %}layui-icon-pause{% else %}layui-icon-play{% end %}"></i>
+                            </button>
+                            <button class="layui-btn layui-btn-xs layui-btn-danger btn-delete" data-id="{{ f['id'] }}" data-name="{{ f['name'] }}">
+                                <i class="layui-icon layui-icon-delete"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+
+        <div style="text-align:center;"><div id="pagination"></div></div>
+    </div>
+</div>
+
+<form id="form-toggle" method="post" action="/admin/function/toggle" style="display:none;">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="id" id="toggle-id">
+</form>
+<form id="form-delete" method="post" action="/admin/function/delete" style="display:none;">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="id" id="delete-id">
+</form>
+{% end %}
+
+{% block admin_scripts %}
+<script>
+layui.use(['laypage', 'layer'], function(){
+    var laypage = layui.laypage;
+    var layer = layui.layer;
+    var $ = layui.$;
+
+    laypage.render({
+        elem: 'pagination',
+        count: {{ total }},
+        limit: 20,
+        curr: {{ page }},
+        groups: 5,
+        layout: ['count', 'prev', 'page', 'next', 'skip'],
+        jump: function(obj, first){
+            if(!first) location.href = '/admin/function?page=' + obj.curr;
+        }
+    });
+
+    $('.btn-toggle').click(function(){
+        $('#toggle-id').val($(this).data('id'));
+        $('#form-toggle').submit();
+    });
+    $('.btn-delete').click(function(){
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        layer.confirm('确定删除功能 <b>' + name + '</b> 吗？关联角色的该权限将一并移除。', {
+            icon: 3, title: '删除确认', btn: ['确定删除', '取消']
+        }, function(){
+            $('#delete-id').val(id);
+            $('#form-delete').submit();
+        });
+    });
+
+    var msg = new URLSearchParams(location.search).get('msg');
+    if(msg) layer.msg(msg, {icon: 1, time: 2000});
+});
+</script>
+{% end %}
