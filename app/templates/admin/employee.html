@@ -1,0 +1,80 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>数字员工管理</span>
+        <button class="layui-btn layui-btn-sm" onclick="showAdd()">新增员工</button>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th style="width:60px;">头像</th>
+                    <th>名称</th>
+                    <th>描述</th>
+                    <th>绑定模型</th>
+                    <th style="width:80px;">状态</th>
+                    <th style="width:150px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in employees %}
+                <tr>
+                    <td>{{ e['id'] }}</td>
+                    <td style="font-size:24px;">{{ e['avatar'] }}</td>
+                    <td><strong>{{ e['name'] }}</strong></td>
+                    <td style="color:#888;">{{ e['description'][:40] }}{% if len(e['description']) > 40 %}...{% end %}</td>
+                    <td>{{ e['model_name'] or '未绑定' }}</td>
+                    <td>{% if e['status'] %}<span class="layui-badge layui-bg-green">启用</span>{% else %}<span class="layui-badge">禁用</span>{% end %}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteEmployee({{ e['id'] }})">删除</button>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 新增弹窗 -->
+<div id="addForm" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:500px;">
+        <h3 style="margin-bottom:16px;">新增数字员工</h3>
+        <form method="post" action="/admin/employee">
+            {% module xsrf_form_html() %}
+            <input type="hidden" name="action" value="add">
+            <div style="margin-bottom:12px;"><input name="name" placeholder="员工名称" class="layui-input" required></div>
+            <div style="margin-bottom:12px;"><input name="avatar" placeholder="头像 (Emoji)" class="layui-input" value="🤖"></div>
+            <div style="margin-bottom:12px;"><input name="description" placeholder="描述" class="layui-input"></div>
+            <div style="margin-bottom:12px;">
+                <select name="model_id" class="layui-input">
+                    <option value="0">-- 选择绑定模型 --</option>
+                    {% for m in models %}
+                    <option value="{{ m['id'] }}">{{ m['name'] }}</option>
+                    {% end %}
+                </select>
+            </div>
+            <div style="margin-bottom:12px;"><textarea name="system_prompt" placeholder="系统提示词" class="layui-input" rows="3"></textarea></div>
+            <div style="text-align:right;">
+                <button type="button" class="layui-btn layui-btn-primary" onclick="closeAdd()">取消</button>
+                <button type="submit" class="layui-btn">确定</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAdd() { document.getElementById('addForm').style.display = 'flex'; }
+function closeAdd() { document.getElementById('addForm').style.display = 'none'; }
+function deleteEmployee(id) {
+    if (!confirm('确定删除？')) return;
+    fetch('/admin/employee', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=delete&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+function getCookie(n){var r=document.cookie.match("\\b"+n+"=([^;]*)\\b");return r?r[1]:undefined}
+</script>
+{% end %}

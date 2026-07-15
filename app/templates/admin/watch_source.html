@@ -1,0 +1,81 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>瞭源管理</span>
+        <button class="layui-btn layui-btn-sm" onclick="showAdd()">新增瞭源</button>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th>名称</th>
+                    <th>描述</th>
+                    <th>URL</th>
+                    <th style="width:80px;">状态</th>
+                    <th style="width:150px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sources %}
+                <tr>
+                    <td>{{ s['id'] }}</td>
+                    <td><strong>{{ s['name'] }}</strong></td>
+                    <td style="color:#888;">{{ s['description'][:40] }}</td>
+                    <td style="font-size:12px;">{{ s['base_url'][:50] }}</td>
+                    <td>{% if s['status'] %}<span class="layui-badge layui-bg-green">启用</span>{% else %}<span class="layui-badge">禁用</span>{% end %}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" onclick="toggleSource({{ s['id'] }})">切换状态</button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteSource({{ s['id'] }})">删除</button>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 新增弹窗 -->
+<div id="addForm" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:500px;">
+        <h3 style="margin-bottom:16px;">新增瞭源</h3>
+        <form method="post" action="/admin/watch-source">
+            {% module xsrf_form_html() %}
+            <input type="hidden" name="action" value="add">
+            <div style="margin-bottom:12px;"><input name="name" placeholder="名称" class="layui-input" required></div>
+            <div style="margin-bottom:12px;"><input name="description" placeholder="描述" class="layui-input"></div>
+            <div style="margin-bottom:12px;"><input name="base_url" placeholder="基础URL" class="layui-input" required></div>
+            <div style="margin-bottom:12px;">
+                <select name="method" class="layui-input">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                </select>
+            </div>
+            <div style="margin-bottom:12px;"><input name="params_template" placeholder="参数模板 (如: wd={keyword}&pn={page})" class="layui-input"></div>
+            <div style="text-align:right;">
+                <button type="button" class="layui-btn layui-btn-primary" onclick="closeAdd()">取消</button>
+                <button type="submit" class="layui-btn">确定</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAdd() { document.getElementById('addForm').style.display = 'flex'; }
+function closeAdd() { document.getElementById('addForm').style.display = 'none'; }
+function toggleSource(id) {
+    fetch('/admin/watch-source', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=toggle&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+function deleteSource(id) {
+    if (!confirm('确定删除？')) return;
+    fetch('/admin/watch-source', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=delete&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+function getCookie(n){var r=document.cookie.match("\\b"+n+"=([^;]*)\\b");return r?r[1]:undefined}
+</script>
+{% end %}

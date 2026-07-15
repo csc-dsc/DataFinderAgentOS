@@ -1,0 +1,78 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<div class="layui-card">
+    <div class="layui-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>模型引擎管理</span>
+        <button class="layui-btn layui-btn-sm" onclick="showAdd()">新增模型</button>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th>名称</th>
+                    <th>模型标识</th>
+                    <th>API 地址</th>
+                    <th style="width:80px;">状态</th>
+                    <th style="width:80px;">默认</th>
+                    <th style="width:150px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in models %}
+                <tr>
+                    <td>{{ m['id'] }}</td>
+                    <td>{{ m['name'] }}</td>
+                    <td><code>{{ m['model_name'] }}</code></td>
+                    <td style="font-size:12px;color:#888;">{{ m['api_url'][:40] }}{% if len(m['api_url']) > 40 %}...{% end %}</td>
+                    <td>{% if m['status'] %}<span class="layui-badge layui-bg-green">启用</span>{% else %}<span class="layui-badge">禁用</span>{% end %}</td>
+                    <td>{% if m['is_default'] %}<span class="layui-badge layui-bg-blue">默认</span>{% else %}-{% end %}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" onclick="setDefault({{ m['id'] }})">设为默认</button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" onclick="deleteModel({{ m['id'] }})">删除</button>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 新增弹窗 -->
+<div id="addForm" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:500px;">
+        <h3 style="margin-bottom:16px;">新增模型引擎</h3>
+        <form method="post" action="/admin/model">
+            {% module xsrf_form_html() %}
+            <input type="hidden" name="action" value="add">
+            <div style="margin-bottom:12px;"><input name="name" placeholder="模型名称" class="layui-input" required></div>
+            <div style="margin-bottom:12px;"><input name="model_name" placeholder="模型标识 (如 qwen-turbo)" class="layui-input" required></div>
+            <div style="margin-bottom:12px;"><input name="api_key" placeholder="API Key" class="layui-input"></div>
+            <div style="margin-bottom:12px;"><input name="api_url" placeholder="API 地址" class="layui-input"></div>
+            <div style="margin-bottom:12px;"><label><input type="checkbox" name="is_default" value="1"> 设为默认</label></div>
+            <div style="text-align:right;">
+                <button type="button" class="layui-btn layui-btn-primary" onclick="closeAdd()">取消</button>
+                <button type="submit" class="layui-btn">确定</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAdd() { document.getElementById('addForm').style.display = 'flex'; }
+function closeAdd() { document.getElementById('addForm').style.display = 'none'; }
+function setDefault(id) {
+    fetch('/admin/model', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=set_default&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+function deleteModel(id) {
+    if (!confirm('确定删除？')) return;
+    fetch('/admin/model', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=delete&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+function getCookie(n){var r=document.cookie.match("\\b"+n+"=([^;]*)\\b");return r?r[1]:undefined}
+</script>
+{% end %}

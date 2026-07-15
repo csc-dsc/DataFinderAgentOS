@@ -1,0 +1,126 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<style>
+    .watch-layout { display: flex; gap: 16px; height: calc(100vh - 120px); }
+    .zone-a { flex: 0 0 320px; background: #fff; border: 1px solid #e2e7ef; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .zone-b { flex: 1; overflow-y: auto; }
+    .section-title { color: #4f6ef6; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .search-input { width: 100%; padding: 12px; border: 2px solid #e2e7ef; border-radius: 10px; font-size: 14px; outline: none; }
+    .search-input:focus { border-color: #4f6ef6; }
+    .collect-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #4f6ef6, #6366f1); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .collect-btn:hover { box-shadow: 0 6px 24px rgba(79,110,246,0.4); }
+    .source-card { background: #f8f9fc; border: 1px solid #e2e7ef; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .source-card.active { border-color: #4f6ef6; }
+    .result-card { background: #fff; border: 1px solid #e2e7ef; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .result-card:hover { border-color: #4f6ef6; box-shadow: 0 4px 16px rgba(79,110,246,0.08); }
+    .card-source { font-size: 11px; color: #4f6ef6; text-transform: uppercase; font-weight: 600; }
+    .card-title { font-size: 14px; font-weight: 600; color: #1a2332; margin: 6px 0; }
+    .card-summary { font-size: 12px; color: #888; }
+</style>
+
+<div class="watch-layout">
+    <div class="zone-a">
+        <div class="section-title">🔍 瞭望采集</div>
+        <input type="text" class="search-input" id="keywordInput" placeholder="输入关键词，如：四川大学">
+        <button class="collect-btn" id="btnCollect" onclick="doCollect()">⚡ 开始采集</button>
+        <div style="margin-top:16px;">
+            <div class="section-title">⚙ 瞭源配置</div>
+            {% for s in sources %}
+            <div class="source-card active" data-sid="{{ s['id'] }}">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:600;">{{ s['name'] }}</div>
+                        <div style="font-size:11px;color:#888;">{{ s['description'][:30] }}</div>
+                    </div>
+                    <label style="cursor:pointer;">
+                        <input type="checkbox" checked class="source-toggle">
+                    </label>
+                </div>
+            </div>
+            {% end %}
+        </div>
+    </div>
+
+    <div class="zone-b" id="resultZone">
+        <div style="text-align:center;padding:80px;color:#999;">
+            <div style="font-size:48px;margin-bottom:16px;">🔍</div>
+            <p>输入关键词，选择瞭源，开始采集</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function doCollect() {
+    var keyword = document.getElementById('keywordInput').value.trim();
+    if (!keyword) { alert('请输入关键词'); return; }
+
+    var activeSources = [];
+    document.querySelectorAll('.source-card.active').forEach(function(c) {
+        activeSources.push(c.dataset.sid);
+    });
+    if (activeSources.length === 0) { alert('请选择至少一个瞭源'); return; }
+
+    document.getElementById('resultZone').innerHTML = '<div style="text-align:center;padding:60px;color:#4f6ef6;">采集中...</div>';
+
+    fetch('/admin/watch', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'keyword=' + encodeURIComponent(keyword) + '&source_ids=' + activeSources.join(',') + '&_xsrf=' + getCookie('_xsrf')
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.code === 0) {
+            renderResults(data.data, keyword);
+        } else {
+            document.getElementById('resultZone').innerHTML = '<div style="text-align:center;padding:60px;color:#ff4d4f;">' + data.msg + '</div>';
+        }
+    });
+}
+
+function renderResults(items, keyword) {
+    var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+    html += '<span style="font-weight:600;">采集结果 (' + items.length + '条)</span>';
+    html += '<button class="layui-btn layui-btn-sm layui-btn-normal" onclick="saveAll(\'' + keyword + '\')">📥 保存到数据仓库</button>';
+    html += '</div>';
+
+    items.forEach(function(item, idx) {
+        html += '<div class="result-card" data-idx="' + idx + '">';
+        html += '<div class="card-source">' + item.source_name + '</div>';
+        html += '<div class="card-title"><a href="' + item.url + '" target="_blank">' + item.title + '</a></div>';
+        html += '<div class="card-summary">' + item.summary + '</div>';
+        html += '</div>';
+    });
+
+    document.getElementById('resultZone').innerHTML = html;
+    window._lastResults = items;
+    window._lastKeyword = keyword;
+}
+
+function saveAll(keyword) {
+    if (!window._lastResults || window._lastResults.length === 0) return;
+    fetch('/admin/warehouse', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=save&items=' + encodeURIComponent(JSON.stringify(window._lastResults)) + '&keyword=' + keyword + '&_xsrf=' + getCookie('_xsrf')
+    })
+    .then(r => r.json())
+    .then(d => { alert(d.msg); });
+}
+
+document.querySelectorAll('.source-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+        this.classList.toggle('active');
+        this.querySelector('.source-toggle').checked = this.classList.contains('active');
+    });
+});
+
+document.getElementById('keywordInput').addEventListener('keydown', function(e) {
+    if (e.keyCode === 13) doCollect();
+});
+
+function getCookie(n){var r=document.cookie.match("\\b"+n+"=([^;]*)\\b");return r?r[1]:undefined}
+</script>
+{% end %}

@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block content %}
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f7; overflow: hidden; }
+    .app-container { display: flex; height: 100vh; }
+
+    /* 左侧面板 */
+    .sidebar { width: 280px; background: #f8f9fa; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 16px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e8e8e8; background: #fff; }
+    .sidebar-logo { width: 36px; height: 36px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; font-weight: bold; }
+    .sidebar-title { font-size: 15px; font-weight: 600; color: #667eea; }
+    .sidebar-subtitle { font-size: 11px; color: #999; margin-top: 2px; }
+
+    .model-selector { padding: 12px 16px; border-bottom: 1px solid #e8e8e8; background: #fff; }
+    .model-selector select { width: 100%; height: 36px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 13px; }
+
+    .task-list-header { padding: 12px 16px 8px; display: flex; justify-content: space-between; align-items: center; }
+    .task-list-header span { font-size: 13px; color: #666; font-weight: 500; }
+    .new-chat-btn { width: 28px; height: 28px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 16px; color: #666; }
+    .new-chat-btn:hover { border-color: #667eea; color: #667eea; }
+
+    .task-list { flex: 1; overflow-y: auto; padding: 4px 8px 8px; }
+    .task-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+    .task-item:hover { background: #eef1f5; }
+    .task-item.active { background: #e8f0fe; color: #667eea; }
+    .task-item .task-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .task-item .task-delete { display: none; font-size: 14px; color: #999; cursor: pointer; margin-left: 8px; }
+    .task-item:hover .task-delete { display: block; }
+
+    .sidebar-footer { padding: 12px 16px; border-top: 1px solid #e8e8e8; background: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-footer .user-info { font-size: 13px; color: #666; }
+    .sidebar-footer .logout-btn { font-size: 12px; color: #999; cursor: pointer; padding: 4px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+    .sidebar-footer .logout-btn:hover { color: #e74c3c; border-color: #e74c3c; }
+
+    /* 右侧工作区 */
+    .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+    .chat-area { flex: 1; overflow-y: auto; padding: 24px 0; display: flex; flex-direction: column; }
+
+    .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; }
+    .chat-welcome .welcome-icon { font-size: 48px; margin-bottom: 16px; }
+    .chat-welcome h2 { font-size: 22px; color: #333; font-weight: 500; margin-bottom: 8px; }
+    .chat-welcome p { font-size: 14px; color: #999; }
+
+    .message-row { display: flex; padding: 12px 24px; max-width: 800px; width: 100%; margin: 0 auto; }
+    .message-row.user { justify-content: flex-end; }
+    .message-row.assistant { justify-content: flex-start; }
+
+    .message-bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; word-break: break-word; }
+    .message-row.user .message-bubble { background: #667eea; color: #fff; border-bottom-right-radius: 4px; }
+    .message-row.assistant .message-bubble { background: #fff; color: #333; border: 1px solid #e8e8e8; border-bottom-left-radius: 4px; }
+    .message-bubble .msg-meta { font-size: 11px; color: #999; margin-top: 6px; }
+
+    .message-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .message-row.assistant .message-avatar { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; margin-right: 10px; }
+    .message-row.user .message-avatar { background: #e8f0fe; color: #667eea; margin-left: 10px; order: 2; }
+
+    .typing-indicator { display: flex; gap: 4px; padding: 8px 0; }
+    .typing-indicator span { width: 8px; height: 8px; border-radius: 50%; background: #ccc; animation: typing 1.4s infinite; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-8px);opacity:1} }
+
+    .input-area { padding: 16px 24px 20px; background: #f5f6f7; }
+    .input-wrapper { max-width: 800px; margin: 0 auto; position: relative; }
+    .input-box { width: 100%; min-height: 48px; max-height: 160px; border: 1px solid #ddd; border-radius: 12px; padding: 12px 60px 12px 16px; font-size: 14px; line-height: 1.5; resize: none; outline: none; background: #fff; }
+    .input-box:focus { border-color: #667eea; }
+
+    .send-btn { position: absolute; right: 12px; bottom: 12px; width: 36px; height: 36px; background: #667eea; border: none; border-radius: 8px; color: #fff; font-size: 16px; cursor: pointer; }
+    .send-btn:hover { opacity: 0.85; }
+
+    .mention-menu { position: absolute; bottom: 60px; left: 16px; background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-height: 240px; overflow-y: auto; display: none; z-index: 100; min-width: 200px; }
+    .mention-menu.show { display: block; }
+    .mention-item { padding: 10px 14px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .mention-item:hover { background: #f0f4ff; }
+
+    @media (max-width: 768px) { .sidebar { display: none; } }
+</style>
+
+<div class="app-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">AI</div>
+            <div>
+                <div class="sidebar-title">智能瞭望与问数</div>
+                <div class="sidebar-subtitle">DataFinderAgentOS v0.3</div>
+            </div>
+        </div>
+
+        <div class="model-selector">
+            <select id="modelSelect">
+                <option value="0" data-type="model">-- 选择模型 --</option>
+                {% for m in models %}
+                <option value="{{ m['id'] }}" data-type="model" {% if default_model and m['id'] == default_model['id'] %}selected{% end %}>{{ m['name'] }}</option>
+                {% end %}
+                {% for e in employees %}
+                <option value="{{ e['id'] }}" data-type="employee">{{ e['name'] }} - 数字员工</option>
+                {% end %}
+            </select>
+        </div>
+
+        <div class="task-list-header">
+            <span>对话历史</span>
+            <button class="new-chat-btn" id="newChatBtn" title="新建对话">+</button>
+        </div>
+        <div class="task-list" id="taskList">
+            {% for conv in conversations %}
+            <div class="task-item" data-id="{{ conv['id'] }}">
+                <span class="task-title">{{ conv['title'] }}</span>
+                <span class="task-delete" data-id="{{ conv['id'] }}">&times;</span>
+            </div>
+            {% end %}
+        </div>
+
+        <div class="sidebar-footer">
+            <span class="user-info">{{ username }}</span>
+            <form method="post" action="/logout" style="display:inline;">
+                {% module xsrf_form_html() %}
+                <button type="submit" class="logout-btn">退出</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div class="chat-area" id="chatArea">
+            <div class="chat-welcome" id="chatWelcome">
+                <div class="welcome-icon">🤖</div>
+                <h2>你好，{{ username }}</h2>
+                <p>有什么我可以帮你的吗？输入消息开始对话</p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea class="input-box" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn">&#10148;</button>
+                <div class="mention-menu" id="mentionMenu">
+                    {% for e in employees %}
+                    <div class="mention-item" data-emp-id="{{ e['id'] }}" data-emp-name="{{ e['name'] }}">
+                        <span>🤖</span>
+                        <span>{{ e['name'] }}</span>
+                    </div>
+                    {% end %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var chatArea = document.getElementById('chatArea');
+    var chatWelcome = document.getElementById('chatWelcome');
+    var messageInput = document.getElementById('messageInput');
+    var sendBtn = document.getElementById('sendBtn');
+    var modelSelect = document.getElementById('modelSelect');
+    var taskList = document.getElementById('taskList');
+    var mentionMenu = document.getElementById('mentionMenu');
+
+    var currentConvId = 0;
+    var isSending = false;
+
+    function getCookie(name) {
+        var arr = document.cookie.match(new RegExp('(^| )' + name + '=([^;]*)(;|$)'));
+        return arr ? decodeURIComponent(arr[2]) : null;
+    }
+    var xsrfToken = getCookie('_xsrf');
+
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+    });
+
+    function sendMessage() {
+        var msg = messageInput.value.trim();
+        if (!msg || isSending) return;
+        isSending = true;
+        sendBtn.disabled = true;
+        if (chatWelcome) chatWelcome.style.display = 'none';
+
+        appendMessage('user', msg);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+
+        var loadingRow = appendLoading();
+
+        var selectedOption = modelSelect.options[modelSelect.selectedIndex];
+        var selectedType = selectedOption.getAttribute('data-type');
+        var selectedValue = parseInt(selectedOption.value);
+        var modelId = 0, employeeId = 0;
+        if (selectedType === 'employee') employeeId = selectedValue;
+        else modelId = selectedValue;
+
+        var formData = new URLSearchParams();
+        formData.append('action', 'chat');
+        formData.append('message', msg);
+        formData.append('conv_id', currentConvId);
+        formData.append('model_id', modelId);
+        formData.append('employee_id', employeeId);
+        if (xsrfToken) formData.append('_xsrf', xsrfToken);
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            loadingRow.remove();
+            if (data.code === 200) {
+                appendMessage('assistant', data.data.content, data.data.model_name, data.data.employee_name);
+                currentConvId = data.data.conv_id;
+                updateTaskList(currentConvId, msg);
+            } else {
+                appendMessage('assistant', '错误：' + data.msg);
+            }
+        })
+        .catch(function(err) {
+            loadingRow.remove();
+            appendMessage('assistant', '请求失败：' + err.message);
+        })
+        .finally(function() {
+            isSending = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        });
+    }
+
+    function appendMessage(role, content, modelName, employeeName) {
+        var row = document.createElement('div');
+        row.className = 'message-row ' + role;
+        var avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = role === 'user' ? '{{ username[0] }}' : 'AI';
+        var bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.textContent = content;
+        if (modelName || employeeName) {
+            var meta = document.createElement('div');
+            meta.className = 'msg-meta';
+            meta.textContent = (employeeName ? '@' + employeeName + ' · ' : '') + (modelName || '');
+            bubble.appendChild(meta);
+        }
+        if (role === 'assistant') { row.appendChild(avatar); row.appendChild(bubble); }
+        else { row.appendChild(bubble); row.appendChild(avatar); }
+        chatArea.appendChild(row);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function appendLoading() {
+        var row = document.createElement('div');
+        row.className = 'message-row assistant';
+        var avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = 'AI';
+        var bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        chatArea.appendChild(row);
+        chatArea.scrollTop = chatArea.scrollHeight;
+        return row;
+    }
+
+    function updateTaskList(convId, title) {
+        var items = taskList.querySelectorAll('.task-item');
+        for (var i = 0; i < items.length; i++) {
+            if (parseInt(items[i].getAttribute('data-id')) === convId) {
+                items[i].querySelector('.task-title').textContent = title.length > 20 ? title.substring(0, 20) + '...' : title;
+                return;
+            }
+        }
+        var item = document.createElement('div');
+        item.className = 'task-item active';
+        item.setAttribute('data-id', convId);
+        item.innerHTML = '<span class="task-title">' + (title.length > 20 ? title.substring(0, 20) + '...' : title) + '</span><span class="task-delete" data-id="' + convId + '">&times;</span>';
+        taskList.insertBefore(item, taskList.firstChild);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    document.getElementById('newChatBtn').addEventListener('click', function() {
+        currentConvId = 0;
+        var msgs = chatArea.querySelectorAll('.message-row');
+        for (var i = 0; i < msgs.length; i++) msgs[i].remove();
+        if (chatWelcome) chatWelcome.style.display = '';
+        messageInput.focus();
+    });
+
+    messageInput.focus();
+})();
+</script>
+{% end %}

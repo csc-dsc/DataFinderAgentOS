@@ -1,0 +1,106 @@
+{% extends "base_layout.html" %}
+
+{% block title %}{{ title }}{% end %}
+
+{% block admin_content %}
+<style>
+    .warehouse-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+    .warehouse-toolbar-left { display: flex; align-items: center; gap: 12px; }
+    .search-input { width: 240px; height: 36px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 14px; }
+    .search-input:focus { border-color: #4f6ef6; }
+    .btn { height: 36px; padding: 0 18px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: #4f6ef6; color: #fff; }
+    .btn-danger { background: #ff4d4f; color: #fff; }
+    .tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+    .tag-yes { background: #f6ffed; color: #52c41a; }
+    .tag-no { background: #fff7e6; color: #fa8c16; }
+</style>
+
+<div class="warehouse-toolbar">
+    <div class="warehouse-toolbar-left">
+        <input type="text" class="search-input" id="searchKeyword" placeholder="搜索标题..." value="{{ keyword }}">
+        <select class="search-input" id="filterSource" style="width:160px;">
+            <option value="">全部来源</option>
+            {% for sn in source_names %}
+            <option value="{{ sn }}" {% if sn == source_name %}selected{% end %}>{{ sn }}</option>
+            {% end %}
+        </select>
+        <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+    </div>
+    <div>
+        <button class="btn btn-danger" id="batchDeleteBtn" onclick="batchDelete()" disabled>批量删除</button>
+    </div>
+</div>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table class="layui-table" lay-skin="line">
+            <thead>
+                <tr>
+                    <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                    <th style="width:60px;">ID</th>
+                    <th>标题</th>
+                    <th>摘要</th>
+                    <th style="width:100px;">来源</th>
+                    <th style="width:80px;">深度采集</th>
+                    <th style="width:160px;">采集时间</th>
+                    <th style="width:120px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr data-id="{{ item['id'] }}">
+                    <td><input type="checkbox" class="row-check" data-id="{{ item['id'] }}" onchange="updateBatchBtn()"></td>
+                    <td>{{ item['id'] }}</td>
+                    <td><a href="{{ item['url'] }}" target="_blank">{{ item['title'] }}</a></td>
+                    <td style="color:#888;font-size:13px;">{{ item['summary'][:50] }}{% if len(item['summary']) > 50 %}...{% end %}</td>
+                    <td>{{ item['source_name'] }}</td>
+                    <td>{% if item['is_deep_collected'] == 1 %}<span class="tag tag-yes">是</span>{% else %}<span class="tag tag-no">否</span>{% end %}</td>
+                    <td style="color:#999;font-size:13px;">{{ item['collected_at'] }}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs" onclick="deleteItem({{ item['id'] }})">删除</button>
+                    </td>
+                </tr>
+                {% end %}
+            </tbody>
+        </table>
+        {% if not items %}
+        <div style="text-align:center;padding:60px;color:#999;">暂无数据，请先在「瞭望管理」中采集数据</div>
+        {% end %}
+    </div>
+</div>
+
+<script>
+function doSearch() {
+    var keyword = document.getElementById('searchKeyword').value;
+    var source = document.getElementById('filterSource').value;
+    location.href = '/admin/warehouse?keyword=' + encodeURIComponent(keyword) + '&source_name=' + encodeURIComponent(source);
+}
+
+function toggleSelectAll() {
+    var checked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = checked; });
+    updateBatchBtn();
+}
+
+function updateBatchBtn() {
+    document.getElementById('batchDeleteBtn').disabled = document.querySelectorAll('.row-check:checked').length === 0;
+}
+
+function deleteItem(id) {
+    if (!confirm('确定删除？')) return;
+    fetch('/admin/warehouse', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=delete&id='+id+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+
+function batchDelete() {
+    var ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb=>cb.dataset.id).join(',');
+    if (!ids) return;
+    if (!confirm('确定删除选中数据？')) return;
+    fetch('/admin/warehouse', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'action=batch_delete&ids='+ids+'&_xsrf='+getCookie('_xsrf')})
+    .then(r=>r.json()).then(d=>{ if(d.code===200) location.reload(); });
+}
+
+function getCookie(n){var r=document.cookie.match("\\b"+n+"=([^;]*)\\b");return r?r[1]:undefined}
+</script>
+{% end %}

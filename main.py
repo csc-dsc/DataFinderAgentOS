@@ -1,5 +1,5 @@
 """
-main.py — 瞭望与问数系统 (DataFinderAgentOS) 主入口
+main.py — 智能耗望与智能问数系统 (DataFinderAgentOS) v0.3 主入口
 
 基于 Tornado 异步 Web 框架 + SQLite + PBKDF2-SHA256 + 双体系 RBAC。
 """
@@ -10,6 +10,7 @@ from tornado.httpserver import HTTPServer
 
 from app.controllers.auth import LoginHandler, LogoutHandler
 from app.controllers.home import IndexHandler
+from app.controllers.chat import ChatHandler
 from app.controllers.admin_home import AdminIndexHandler
 from app.controllers.admin_user import (
     UserListHandler, UserFormHandler, UserDeleteHandler, UserToggleHandler,
@@ -25,15 +26,22 @@ from app.controllers.admin_menu import (
     MenuListHandler, MenuFormHandler, MenuDeleteHandler, MenuToggleHandler,
 )
 from app.controllers.fingerprint import FingerprintHandler
+from app.controllers.warehouse import WarehouseHandler
+from app.controllers.watch import WatchHandler
+from app.controllers.watch_source import WatchSourceHandler
+from app.controllers.model_engine import ModelEngineHandler
+from app.controllers.digital_employee import DigitalEmployeeHandler
 from app.models.db import init_db, seed_default_data
 
 
 def make_app() -> tornado.web.Application:
     return tornado.web.Application(
         [
+            # 前台路由
             (r"/", LoginHandler),
             (r"/logout", LogoutHandler),
             (r"/index", IndexHandler),
+            (r"/chat", ChatHandler),
 
             # Dashboard
             (r"/admin", AdminIndexHandler),
@@ -67,6 +75,21 @@ def make_app() -> tornado.web.Application:
             (r"/admin/menu/delete", MenuDeleteHandler),
             (r"/admin/menu/toggle", MenuToggleHandler),
 
+            # 数据仓库
+            (r"/admin/warehouse", WarehouseHandler),
+
+            # 瞭望管理
+            (r"/admin/watch", WatchHandler),
+
+            # 瞭源管理
+            (r"/admin/watch-source", WatchSourceHandler),
+
+            # 模型引擎
+            (r"/admin/model", ModelEngineHandler),
+
+            # 数字员工
+            (r"/admin/employee", DigitalEmployeeHandler),
+
             # 浏览器指纹
             (r"/fp", FingerprintHandler),
         ],
@@ -86,7 +109,7 @@ if __name__ == "__main__":
     server = HTTPServer(app)
     server.listen(10010)
     print("=" * 50)
-    print("  智能瞭望与智能问数系统 (DataFinderAgentOS) v0.3")
+    print("  智能耗望与智能问数系统 (DataFinderAgentOS) v0.3")
     print("  Server Started: http://localhost:10010/")
     print("=" * 50)
     tornado.ioloop.IOLoop.current().start()
