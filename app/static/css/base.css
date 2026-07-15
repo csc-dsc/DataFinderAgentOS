@@ -1,5 +1,6 @@
 /**
- * base.css — 瞭望与问数系统基础样式
+ * base.css — 智能耗望与智能问数系统 v0.3 基础样式
+ * 明远湖大豆包 · 陈书成
  */
 
 /* 全局重置 */
@@ -10,21 +11,28 @@
 }
 
 html, body {
-    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Helvetica Neue", sans-serif;
     font-size: 14px;
-    color: #333;
-    background: #f0f2f5;
+    color: #1a2332;
+    background: #f0f3f8;
+    line-height: 1.6;
 }
 
 /* 链接 */
 a {
-    color: #1E9FFF;
+    color: #4f6ef6;
     text-decoration: none;
-    transition: color 0.3s;
+    transition: color 0.2s;
 }
 a:hover {
-    color: #5FB878;
+    color: #3b54db;
 }
+
+/* 滚动条美化 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* 通用辅助 */
 .text-center { text-align: center; }
@@ -33,6 +41,54 @@ a:hover {
     content: "";
     display: table;
     clear: both;
+}
+
+/* 按钮统一样式 */
+.layui-btn {
+    border-radius: 8px !important;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.layui-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 卡片统一样式 */
+.layui-card {
+    border-radius: 10px !important;
+    border: 1px solid #e2e7ef !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+}
+
+/* 输入框统一样式 */
+.layui-input, .layui-textarea {
+    border-radius: 8px !important;
+    border-color: #e2e7ef !important;
+    transition: all 0.2s;
+}
+.layui-input:focus, .layui-textarea:focus {
+    border-color: #4f6ef6 !important;
+    box-shadow: 0 0 0 3px rgba(79,110,246,0.08);
+}
+
+/* 表格样式 */
+.layui-table {
+    border-color: #e2e7ef;
+}
+.layui-table th {
+    background: #f8f9fc !important;
+    font-weight: 600;
+    color: #1a2332;
+}
+.layui-table td {
+    border-color: #f0f2f5;
+}
+
+/* 徽章样式 */
+.layui-badge {
+    border-radius: 6px;
+    font-weight: 500;
 }
 
 /* ── COD·陌 水印 ── */
@@ -47,10 +103,19 @@ a:hover {
 .watermark-layer span {
     position: absolute;
     font-size: 18px;
-    color: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.04);
     white-space: nowrap;
     user-select: none;
     transform: rotate(-25deg);
     font-weight: 600;
     letter-spacing: 2px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+    animation: fadeIn 0.3s ease;
 }

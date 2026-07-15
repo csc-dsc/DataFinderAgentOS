@@ -4,123 +4,206 @@
 
 {% block content %}
 <style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-    }
-    .login-container {
-        width: 400px;
-        padding: 40px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .login-container h2 {
-        text-align: center;
-        margin-bottom: 30px;
-        color: #333;
-        font-size: 24px;
-    }
-    .login-container .layui-form-item {
-        margin-bottom: 20px;
-    }
-    .login-container .layui-btn-fluid {
-        width: 100%;
-    }
-    .login-footer {
-        text-align: center;
-        margin-top: 20px;
-        color: #999;
-        font-size: 12px;
-    }
-    .error-msg {
-        background: #fff5f5;
-        border: 1px solid #ffccc7;
-        color: #cf1322;
-        padding: 10px 15px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        text-align: center;
-    }
+  :root {
+    --bg-deep: #080e1f;
+    --accent: #00c6ff;
+    --accent2: #0072ff;
+    --card-bg: rgba(255,255,255,0.04);
+    --text: #e0e6f0;
+    --text-dim: #7b8ba8;
+    --input-bg: rgba(255,255,255,0.05);
+    --danger: #ff5e6b;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg-deep);
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  .bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,198,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,198,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .bg-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.35; }
+  .bg-orb.orb1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--accent2) 0%, transparent 70%); top: -200px; left: -150px; animation: orbFloat1 18s ease-in-out infinite; }
+  .bg-orb.orb2 { width: 400px; height: 400px; background: radial-gradient(circle, #1e3c72 0%, transparent 70%); bottom: -150px; right: -100px; animation: orbFloat2 22s ease-in-out infinite; }
+  .bg-orb.orb3 { width: 300px; height: 300px; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); top: 60%; left: 60%; animation: orbFloat3 15s ease-in-out infinite; }
+
+  @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(80px,-40px) scale(1.15)} 66%{transform:translate(-30px,60px) scale(0.9)} }
+  @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,40px) scale(1.2)} }
+  @keyframes orbFloat3 { 0%,100%{transform:translate(0,0) scale(1);opacity:0.25} 50%{transform:translate(50px,-80px) scale(1.3);opacity:0.5} }
+
+  .particles { position: absolute; inset: 0; }
+  .particle { position: absolute; width: 2px; height: 2px; background: var(--accent); border-radius: 50%; animation: particleDrift linear infinite; opacity: 0; }
+  @keyframes particleDrift { 0%{opacity:0;transform:translateY(100vh) scale(0)} 10%{opacity:1} 90%{opacity:1} 100%{opacity:0;transform:translateY(-100vh) scale(1)} }
+
+  .login-container { position: relative; z-index: 1; width: 420px; max-width: 92vw; animation: cardEnter 0.8s cubic-bezier(0.22,0.61,0.36,1) both; }
+  @keyframes cardEnter { from{opacity:0;transform:translateY(30px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+  .login-card {
+    background: var(--card-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+    padding: 48px 36px 40px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 24px 80px rgba(0,0,0,0.5);
+  }
+
+  .brand { text-align: center; margin-bottom: 40px; }
+  .brand .logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    margin-bottom: 16px; font-size: 26px; color: #fff;
+    box-shadow: 0 8px 32px rgba(0,114,255,0.35);
+  }
+  .brand h1 { font-size: 24px; font-weight: 600; color: #fff; letter-spacing: 3px; margin-bottom: 6px; }
+  .brand p { font-size: 13px; color: var(--text-dim); letter-spacing: 1px; }
+
+  .form-group { margin-bottom: 22px; position: relative; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+  .form-group .input-wrap { position: relative; display: flex; align-items: center; }
+  .form-group .input-icon { position: absolute; left: 16px; width: 18px; height: 18px; pointer-events: none; z-index: 2; }
+  .form-group .input-icon svg { width: 100%; height: 100%; stroke: var(--text-dim); transition: stroke 0.3s; }
+  .form-group input {
+    width: 100%; padding: 14px 16px 14px 48px;
+    background: var(--input-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+    font-size: 15px; color: #fff; outline: none; transition: all 0.3s; font-family: inherit; letter-spacing: 0.5px;
+  }
+  .form-group input::placeholder { color: rgba(255,255,255,0.18); }
+  .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,198,255,0.1), 0 0 30px rgba(0,198,255,0.06); background: rgba(255,255,255,0.07); }
+
+  .error-msg { text-align: center; padding: 12px; margin-bottom: 20px; background: rgba(255,94,107,0.1); border: 1px solid rgba(255,94,107,0.2); border-radius: 10px; color: var(--danger); font-size: 13px; animation: shake 0.5s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+  .btn-login {
+    width: 100%; padding: 15px; margin-top: 8px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 2px; cursor: pointer;
+    transition: all 0.3s; position: relative; overflow: hidden; font-family: inherit;
+    box-shadow: 0 6px 24px rgba(0,114,255,0.3);
+  }
+  .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,114,255,0.45); }
+  .btn-login:active { transform: translateY(0) scale(0.98); }
+  .btn-login::after { content:''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%); transform: translateX(-100%); transition: transform 0.6s; }
+  .btn-login:hover::after { transform: translateX(100%); }
+
+  .footer-link { text-align: center; margin-top: 28px; }
+  .footer-link a { color: var(--text-dim); font-size: 13px; text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+  .footer-link a:hover { color: var(--accent); }
+
+  .data-line { display: flex; align-items: center; gap: 6px; margin: 32px 0 0; justify-content: center; }
+  .data-line .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: 0.4; animation: pulse 3s ease-in-out infinite; }
+  .data-line .dot:nth-child(1){animation-delay:0s} .data-line .dot:nth-child(2){animation-delay:0.4s} .data-line .dot:nth-child(3){animation-delay:0.8s} .data-line .dot:nth-child(4){animation-delay:1.2s} .data-line .dot:nth-child(5){animation-delay:1.6s}
+  @keyframes pulse { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.8)} }
+
+  @media (max-width: 480px) { .login-card{padding:32px 22px 28px;border-radius:16px} .brand h1{font-size:20px;letter-spacing:2px} }
 </style>
 
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+  <div class="particles" id="particles"></div>
+</div>
+
 <div class="login-container">
-    <h2>{{ title }}</h2>
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          <line x1="8" y1="9" x2="8" y2="9.01"/><line x1="16" y1="9" x2="16" y2="9.01"/>
+          <line x1="8" y1="13" x2="8" y2="13.01"/>
+        </svg>
+      </div>
+      <h1>智能瞭望与问数</h1>
+      <p>DataFinderAgentOS v0.3 · 智能数据发现体</p>
+    </div>
 
     {% if error %}
     <div class="error-msg">{{ error }}</div>
     {% end %}
 
-    <form class="layui-form" method="post" action="/" id="login-form">
-        {% module xsrf_form_html() %}
-        <div class="layui-form-item">
-            <input type="text" name="username" lay-verify="required" placeholder="请输入用户名"
-                   autocomplete="off" class="layui-input" required>
+    <form method="post" action="/" id="login-form">
+      {% module xsrf_form_html() %}
+      <div class="form-group">
+        <label>用户名</label>
+        <div class="input-wrap">
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <input type="text" name="username" placeholder="请输入用户名" autocomplete="off">
         </div>
-        <div class="layui-form-item">
-            <input type="password" name="password" lay-verify="required" placeholder="请输入密码"
-                   autocomplete="off" class="layui-input" id="password-input" required>
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <div class="input-wrap">
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <input type="password" name="password" placeholder="请输入密码" autocomplete="off" id="password-input">
         </div>
-        <div class="layui-form-item">
-            <button type="submit" class="layui-btn layui-btn-fluid layui-btn-normal" lay-submit lay-filter="login">
-                登 录
-            </button>
-        </div>
+      </div>
+      <button type="submit" class="btn-login">登 录</button>
     </form>
 
-    <div class="login-footer">
-        <p>瞭望与问数系统 v0.1 · DataFinderAgentOS</p>
+    <div class="footer-link">
+      <a href="">&copy; 2026 DataFinderAgentOS · 明远湖大豆包</a>
     </div>
+    <div class="data-line">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span>
+    </div>
+  </div>
 </div>
 
 <script>
-// SHA256 实现 — 使用 TextEncoder 支持完整 UTF-8
+(function() {
+  var container = document.getElementById('particles');
+  if (!container) return;
+  for (var i = 0; i < 40; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (8 + Math.random() * 16) + 's';
+    p.style.animationDelay = Math.random() * 14 + 's';
+    p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
+    if (Math.random() > 0.6) p.style.background = '#00c6ff';
+    container.appendChild(p);
+  }
+})();
+
 function sha256(str) {
-    function rotr(v, n) { return (v >>> n) | (v << (32 - n)); }
-
-    var msg = new TextEncoder().encode(str);
-    var H = new Int32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
-    var K = new Int32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
-
-    var bitLen = msg.length * 8;
-    var padLen = (56 - (msg.length + 1) % 64 + 64) % 64;
-    var buf = new Uint8Array(msg.length + 1 + padLen + 8);
-    buf.set(msg);
-    buf[msg.length] = 0x80;
-    var hi = (bitLen / 0x100000000) | 0, lo = bitLen | 0;
-    var view = new DataView(buf.buffer);
-    view.setUint32(buf.length - 8, hi, false);
-    view.setUint32(buf.length - 4, lo, false);
-
-    for (var b = 0; b < buf.length; b += 64) {
-        var W = new Uint32Array(64);
-        for (var i = 0; i < 16; i++) W[i] = view.getUint32(b + i * 4, false);
-        for (var i = 16; i < 64; i++) {
-            var s0 = rotr(W[i-15],7)^rotr(W[i-15],18)^(W[i-15]>>>3);
-            var s1 = rotr(W[i-2],17)^rotr(W[i-2],19)^(W[i-2]>>>10);
-            W[i] = (W[i-16] + s0 + W[i-7] + s1) | 0;
-        }
-        var a=H[0],b2=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
-        for (var i=0;i<64;i++) {
-            var S1=rotr(e,6)^rotr(e,11)^rotr(e,25);
-            var ch=(e&f)^((~e)&g);
-            var t1=(h+S1+ch+K[i]+W[i])|0;
-            var S0=rotr(a,2)^rotr(a,13)^rotr(a,22);
-            var maj=(a&b2)^(a&c)^(b2&c);
-            var t2=(S0+maj)|0;
-            h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b2;b2=a;a=(t1+t2)|0;
-        }
-        H[0]+=a;H[1]+=b2;H[2]+=c;H[3]+=d;H[4]+=e;H[5]+=f;H[6]+=g;H[7]+=h;
-    }
+    function rotr(v,n){return(v>>>n)|(v<<(32-n))}
+    var msg=new TextEncoder().encode(str);
+    var H=new Int32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+    var K=new Int32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+    var bitLen=msg.length*8;var padLen=(56-(msg.length+1)%64+64)%64;
+    var buf=new Uint8Array(msg.length+1+padLen+8);buf.set(msg);buf[msg.length]=0x80;
+    var hi=(bitLen/0x100000000)|0,lo=bitLen|0;var view=new DataView(buf.buffer);
+    view.setUint32(buf.length-8,hi,false);view.setUint32(buf.length-4,lo,false);
+    for(var b=0;b<buf.length;b+=64){var W=new Uint32Array(64);for(var i=0;i<16;i++)W[i]=view.getUint32(b+i*4,false);
+    for(var i=16;i<64;i++){var s0=rotr(W[i-15],7)^rotr(W[i-15],18)^(W[i-15]>>>3);var s1=rotr(W[i-2],17)^rotr(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0}
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(var i=0;i<64;i++){var S1=rotr(e,6)^rotr(e,11)^rotr(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[i]+W[i])|0;
+    var S0=rotr(a,2)^rotr(a,13)^rotr(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)|0;
+    h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0}H[0]+=a;H[1]+=b;H[2]+=c;H[3]+=d;H[4]+=e;H[5]+=f;H[6]+=g;H[7]+=h}
     var hex='';for(var i=0;i<8;i++)hex+=((H[i]>>>0).toString(16).padStart(8,'0'));return hex;
 }
 
-// 表单提交前对密码做 SHA256 预处理，防止明文传输
 document.getElementById('login-form').addEventListener('submit', function(e) {
     var pwdInput = document.getElementById('password-input');
     pwdInput.value = sha256(pwdInput.value);

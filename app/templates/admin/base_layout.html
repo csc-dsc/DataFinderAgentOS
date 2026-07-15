@@ -4,53 +4,129 @@
 
 {% block content %}
 <style>
-    .admin-layout { min-height: 100vh; }
-    .admin-header { background: #23262E; height: 60px; line-height: 60px; color: #fff; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-    .admin-header .logo { font-size: 20px; font-weight: bold; color: #5FB878; }
-    .admin-header .logo-sub { color: #888; font-size: 12px; margin-left: 8px; }
-    .admin-header .logo-sep { color: #555; margin: 0 6px; }
-    .admin-header .user-info { color: #aaa; font-size: 14px; }
-    .admin-header .user-info a { color: #b0b9cc; margin-left: 15px; text-decoration: none; }
-    .admin-header .user-info a:hover { color: #fff; }
-    .admin-side { position: fixed; top: 60px; left: 0; bottom: 0; width: 200px; background: #2F4056; color: #a7b1c2; overflow-y: auto; }
-    .admin-side .layui-nav { background: transparent; }
-    .admin-side .layui-nav .layui-nav-item a { color: #d4d9e2; }
-    .admin-side .layui-nav .layui-nav-item .layui-icon { margin-right: 8px; font-size: 16px; }
-    .admin-side .layui-nav .layui-nav-child { background: #263445; }
-    .admin-side .layui-nav .layui-nav-child dd a { padding-left: 45px; color: #a7b1c2; }
-    .admin-side .layui-nav .layui-nav-child dd a:hover { color: #fff; background: #1E9FFF; }
-    .admin-side .layui-nav .layui-nav-itemed > .layui-nav-child { display: block; }
-    .admin-body { margin-left: 200px; padding: 15px; background: #f0f2f5; min-height: calc(100vh - 60px); }
-    .admin-body .layui-card { margin-bottom: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .admin-body .layui-card-header { background: #fafafa; font-weight: 500; border-bottom: 1px solid #f0f0f0; }
+    :root {
+        --admin-primary: #1e3c72;
+        --admin-primary-light: #2a5298;
+        --admin-accent: #4f6ef6;
+        --admin-bg: #f0f2f5;
+        --admin-sidebar: #1a1f36;
+        --admin-sidebar-hover: #252b48;
+        --admin-text: #1a2332;
+        --admin-dim: #8896a6;
+        --admin-border: #e2e7ef;
+    }
+
+    .admin-layout { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ====== 顶栏 ====== */
+    .admin-header {
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-light));
+        height: 60px; line-height: 60px; color: #fff; padding: 0 24px;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .admin-header .logo-area { display: flex; align-items: center; gap: 12px; }
+    .admin-header .logo-icon {
+        width: 36px; height: 36px; background: rgba(255,255,255,0.15);
+        border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        font-size: 18px; backdrop-filter: blur(8px);
+    }
+    .admin-header .logo-text { font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+    .admin-header .logo-sub { color: rgba(255,255,255,0.7); font-size: 12px; margin-left: 4px; }
+    .admin-header .user-area { display: flex; align-items: center; gap: 16px; }
+    .admin-header .user-avatar {
+        width: 34px; height: 34px; background: rgba(255,255,255,0.2);
+        border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 600;
+    }
+    .admin-header .user-name { font-size: 14px; }
+    .admin-header .logout-btn {
+        padding: 6px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px; color: #fff; font-size: 12px; cursor: pointer; text-decoration: none;
+        transition: all 0.2s; backdrop-filter: blur(4px);
+    }
+    .admin-header .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ====== 侧边栏 ====== */
+    .admin-side {
+        position: fixed; top: 60px; left: 0; bottom: 0; width: 220px;
+        background: var(--admin-sidebar); color: #a7b1c2; overflow-y: auto;
+        box-shadow: 2px 0 12px rgba(0,0,0,0.1); z-index: 90;
+    }
+    .admin-side .layui-nav { background: transparent; padding: 12px 0; }
+    .admin-side .layui-nav .layui-nav-item a {
+        color: #c5cad8; padding: 0 20px; height: 44px; line-height: 44px;
+        transition: all 0.2s; border-left: 3px solid transparent;
+    }
+    .admin-side .layui-nav .layui-nav-item a:hover {
+        color: #fff; background: var(--admin-sidebar-hover); border-left-color: var(--admin-accent);
+    }
+    .admin-side .layui-nav .layui-nav-itemed > a {
+        color: #fff; background: var(--admin-sidebar-hover); border-left-color: var(--admin-accent);
+    }
+    .admin-side .layui-nav .layui-nav .layui-icon { margin-right: 10px; font-size: 16px; }
+    .admin-side .layui-nav .layui-nav-child { background: rgba(0,0,0,0.15); }
+    .admin-side .layui-nav .layui-nav-child dd a { padding-left: 52px; color: #a7b1c2; }
+    .admin-side .layui-nav .layui-nav-child dd a:hover { color: #fff; background: var(--admin-sidebar-hover); }
+
+    /* ====== 主体内容 ====== */
+    .admin-body {
+        margin-left: 220px; margin-top: 60px; padding: 20px;
+        background: var(--admin-bg); min-height: calc(100vh - 60px);
+    }
+    .admin-body .layui-card {
+        margin-bottom: 16px; border-radius: 10px; border: 1px solid var(--admin-border);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden;
+    }
+    .admin-body .layui-card-header {
+        background: #fff; font-weight: 500; border-bottom: 1px solid var(--admin-border);
+        padding: 14px 20px; font-size: 15px;
+    }
+    .admin-body .layui-card-body { padding: 20px; }
+
+    /* ====== 统计卡片 ====== */
     .stat-box { text-align: center; padding: 24px 10px; transition: transform 0.2s; cursor: default; }
     .stat-box:hover { transform: translateY(-2px); }
-    .stat-box .stat-number { font-size: 40px; font-weight: bold; color: #1E9FFF; line-height: 1.2; }
-    .stat-box .stat-label { font-size: 14px; color: #666; margin-top: 8px; }
-    .stat-box .stat-desc { font-size: 12px; color: #aaa; margin-top: 4px; }
+    .stat-box .stat-number { font-size: 36px; font-weight: 700; color: var(--admin-accent); line-height: 1.2; }
+    .stat-box .stat-label { font-size: 14px; color: var(--admin-text); margin-top: 8px; }
+    .stat-box .stat-desc { font-size: 12px; color: var(--admin-dim); margin-top: 4px; }
+
+    /* ====== 表格 ====== */
+    .admin-body .layui-table { margin: 0; }
     .admin-body .layui-table td { vertical-align: middle; }
-    .admin-body .layui-badge { height: auto; line-height: 1.4; padding: 3px 8px; vertical-align: middle; }
-    .admin-body .layui-btn-group { display: inline-flex; align-items: center; gap: 3px; }
-    .admin-body .layui-btn-group .layui-btn { margin-left: 0 !important; }
-    .admin-body .layui-laypage { display: inline-block; margin: 15px auto 0; }
-    .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
-    .search-bar .layui-input { width: 220px; height: 36px; }
-    .search-bar .layui-btn { height: 36px; line-height: 36px; }
+    .admin-body .layui-badge { height: auto; line-height: 1.4; padding: 3px 10px; vertical-align: middle; border-radius: 4px; }
+
+    /* ====== 按钮组 ====== */
+    .admin-body .layui-btn-group { display: inline-flex; align-items: center; gap: 4px; }
+    .admin-body .layui-btn-group .layui-btn { margin-left: 0 !important; border-radius: 6px; }
+
+    /* ====== 分页 ====== */
+    .admin-body .layui-laypage { display: inline-block; margin: 16px auto 0; }
+
+    /* ====== 搜索栏 ====== */
+    .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-bar .layui-input { width: 240px; height: 38px; border-radius: 8px; }
+    .search-bar .layui-btn { height: 38px; line-height: 38px; border-radius: 8px; }
+
     .msg-tip { color: #5FB878; margin-left: 10px; }
-    .empty-state { text-align: center; padding: 40px; color: #999; }
-    .empty-state .layui-icon { font-size: 48px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--admin-dim); }
+    .empty-state .layui-icon { font-size: 56px; opacity: 0.4; }
+    .empty-state p { margin-top: 12px; font-size: 14px; }
 </style>
 
 <div class="admin-layout">
     <div class="admin-header">
-        <div>
-            <span class="logo">&#x1F52D; 瞭望与问数系统</span>
-            <span class="logo-sep">|</span>
-            <span class="logo-sub">DataFinderAgentOS v0.2</span>
+        <div class="logo-area">
+            <div class="logo-icon">&#128269;</div>
+            <div>
+                <span class="logo-text">智能瞭望与问数</span>
+                <span class="logo-sub">v0.3</span>
+            </div>
         </div>
-        <div class="user-info">
-            <span>&#x1F464; {{ username }}</span>
-            <a href="/logout">退出登录</a>
+        <div class="user-area">
+            <div class="user-avatar">{{ username[0].upper() if username else 'A' }}</div>
+            <span class="user-name">{{ username }}</span>
+            <a href="/logout" class="logout-btn">退出登录</a>
         </div>
     </div>
 

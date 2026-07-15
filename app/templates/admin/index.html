@@ -3,55 +3,109 @@
 {% block title %}{{ title }}{% end %}
 
 {% block admin_content %}
-<div class="layui-row layui-col-space12">
-    <div class="layui-col-md3">
-        <div class="layui-card">
-            <div class="layui-card-body stat-box">
-                <div class="stat-number">{{ user_count }}</div>
-                <div class="stat-label">系统用户数</div>
-                <div class="stat-desc">含管理员账号</div>
-            </div>
+<style>
+    .dashboard-welcome {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: #fff; padding: 28px 32px; border-radius: 10px;
+        margin-bottom: 20px; box-shadow: 0 4px 12px rgba(30,60,114,0.3);
+    }
+    .dashboard-welcome h2 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+    .dashboard-welcome p { font-size: 14px; opacity: 0.85; }
+
+    .stat-cards { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat-card {
+        flex: 1; min-width: 200px; background: #fff; border-radius: 10px;
+        padding: 24px 20px; display: flex; align-items: center; gap: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .stat-card .stat-icon {
+        width: 52px; height: 52px; border-radius: 12px; display: flex;
+        align-items: center; justify-content: center; font-size: 24px; color: #fff; flex-shrink: 0;
+    }
+    .stat-card .stat-icon.blue   { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    .stat-card .stat-icon.green  { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+    .stat-card .stat-icon.orange { background: linear-gradient(135deg, #e67e22, #f39c12); }
+    .stat-card .stat-icon.purple { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+    .stat-card .stat-info h3 { font-size: 26px; font-weight: 600; color: #333; margin: 0; line-height: 1; }
+    .stat-card .stat-info p { font-size: 13px; color: #999; margin: 4px 0 0 0; }
+
+    .welcome-card {
+        background: #fff; border-radius: 10px; padding: 24px 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .welcome-card h3 { font-size: 16px; color: #333; margin-bottom: 12px; }
+    .welcome-card p { font-size: 14px; color: #666; line-height: 1.8; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+    .feature-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f9fa; border-radius: 8px; }
+    .feature-item .fi-icon { font-size: 20px; }
+    .feature-item .fi-text { font-size: 13px; color: #555; }
+</style>
+
+<div class="dashboard-welcome">
+    <h2>欢迎回来，{{ username }}</h2>
+    <p>智能瞭望与智能问数系统 v0.3 · DataFinderAgentOS · 明远湖大豆包</p>
+</div>
+
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-icon blue">&#128101;</div>
+        <div class="stat-info">
+            <h3>{{ user_count }}</h3>
+            <p>系统用户</p>
         </div>
     </div>
-    <div class="layui-col-md3">
-        <div class="layui-card">
-            <div class="layui-card-body stat-box">
-                <div class="stat-number">{{ role_count }}</div>
-                <div class="stat-label">角色数</div>
-                <div class="stat-desc">系统角色+自定义角色</div>
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon green">&#127919;</div>
+        <div class="stat-info">
+            <h3>{{ role_count }}</h3>
+            <p>角色权限</p>
         </div>
     </div>
-    <div class="layui-col-md3">
-        <div class="layui-card">
-            <div class="layui-card-body stat-box">
-                <div class="stat-number">{{ func_count }}</div>
-                <div class="stat-label">功能权限码</div>
-                <div class="stat-desc">后端权限控制</div>
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">&#9881;</div>
+        <div class="stat-info">
+            <h3>{{ func_count }}</h3>
+            <p>功能权限码</p>
         </div>
     </div>
-    <div class="layui-col-md3">
-        <div class="layui-card">
-            <div class="layui-card-body stat-box">
-                <div class="stat-number">{{ menu_count }}</div>
-                <div class="stat-label">菜单项</div>
-                <div class="stat-desc">前端导航菜单</div>
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">&#128196;</div>
+        <div class="stat-info">
+            <h3>{{ menu_count }}</h3>
+            <p>导航菜单</p>
         </div>
     </div>
-    <div class="layui-col-md12">
-        <div class="layui-card">
-            {% if is_admin %}
-            <div class="layui-card-header">欢迎使用管理后台</div>
-            {% end %}
-            <div class="layui-card-body">
-                <p>欢迎回来，<strong>{{ username }}</strong>！</p>
-                <p style="color:#666;margin-top:10px;">
-                    瞭望与问数系统（DataFinderAgentOS）是一个基于 AI Agent 的数据查询与分析平台。
-                    您可以通过左侧菜单管理用户、角色、功能和菜单。
-                </p>
-            </div>
+</div>
+
+<div class="welcome-card">
+    <h3>&#128640; 系统功能</h3>
+    <p>智能瞭望与问数系统是一个基于 AI Agent 的数据查询与分析平台，支持智能对话、数据采集、知识管理等功能。</p>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <span class="fi-icon">&#129302;</span>
+            <span class="fi-text">AI 智能对话</span>
+        </div>
+        <div class="feature-item">
+            <span class="fi-icon">&#128270;</span>
+            <span class="fi-text">数据瞭望采集</span>
+        </div>
+        <div class="feature-item">
+            <span class="fi-icon">&#128451;</span>
+            <span class="fi-text">数据仓库管理</span>
+        </div>
+        <div class="feature-item">
+            <span class="fi-icon">&#128161;</span>
+            <span class="fi-text">智能分析报告</span>
+        </div>
+        <div class="feature-item">
+            <span class="fi-icon">&#128272;</span>
+            <span class="fi-text">RBAC 权限控制</span>
+        </div>
+        <div class="feature-item">
+            <span class="fi-icon">&#128202;</span>
+            <span class="fi-text">数据可视化</span>
         </div>
     </div>
 </div>
