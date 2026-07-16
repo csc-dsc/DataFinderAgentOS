@@ -139,15 +139,16 @@ def seed_default_data():
         if existing_menus["cnt"] == 0:
             menus = [
                 (1,"dashboard","Dashboard","/admin","layui-icon-console",1,None,1),
-                (2,"user","Users","/admin/user","layui-icon-user",2,None,1),
-                (3,"role","Roles","/admin/role","layui-icon-group",3,None,1),
-                (4,"function","Functions","/admin/function","layui-icon-template-1",4,None,1),
-                (5,"menu_mgr","Menus","/admin/menu","layui-icon-list",5,None,1),
-                (6,"warehouse","Data Warehouse","/admin/warehouse","layui-icon-read",6,None,1),
-                (7,"watch","Watch","/admin/watch","layui-icon-search",7,None,1),
-                (8,"watch_src","Watch Sources","/admin/watch-source","layui-icon-url",8,None,1),
-                (9,"model","Models","/admin/model","layui-icon-engine",9,None,1),
-                (10,"employee","Employees","/admin/employee","layui-icon-diamond",10,None,1),
+                (2,"data_screen","Data Screen","/admin/dashboard","layui-icon-chart-screen",2,None,1),
+                (3,"user","Users","/admin/user","layui-icon-user",3,None,1),
+                (4,"role","Roles","/admin/role","layui-icon-group",4,None,1),
+                (5,"function","Functions","/admin/function","layui-icon-template-1",5,None,1),
+                (6,"menu_mgr","Menus","/admin/menu","layui-icon-list",6,None,1),
+                (7,"warehouse","Data Warehouse","/admin/warehouse","layui-icon-read",7,None,1),
+                (8,"watch","Watch","/admin/watch","layui-icon-search",8,None,1),
+                (9,"watch_src","Watch Sources","/admin/watch-source","layui-icon-url",9,None,1),
+                (10,"model","Models","/admin/model","layui-icon-engine",10,None,1),
+                (11,"employee","Employees","/admin/employee","layui-icon-diamond",11,None,1),
             ]
             conn.executemany("INSERT INTO menus (id,code,name,path,icon,sort_order,parent_id,is_enabled) VALUES (?,?,?,?,?,?,?,?)", menus)
             print("[Seed] Menus created")
@@ -199,18 +200,18 @@ def seed_default_data():
         existing_emp = conn.execute("SELECT COUNT(*) as cnt FROM digital_employees").fetchone()
         if existing_emp["cnt"] == 0:
             emps = [
-                ("General Assistant","All-purpose AI assistant for Q&A, writing, coding","robot","You are a professional AI assistant.",1),
-                ("Data Analyst","Data analysis and visualization expert","chart","You are a data analysis expert.",1),
-                ("Code Assistant","Programming help for multiple languages","laptop","You are a programming expert.",1),
-                ("Writing Expert","Content writing and text polishing","pen","You are a writing expert.",1),
-                ("Legal Advisor","Legal consultation and risk assessment","scales","You are a legal advisor. Answers are for reference only.",1),
-                ("Finance Advisor","Financial analysis and investment advice","money","You are a financial advisor. Answers are for reference only.",1),
-                ("Product Manager","Product requirements and competitive analysis","clipboard","You are a product manager.",1),
-                ("UI Designer","Interface design and user experience","palette","You are a UI/UX designer.",1),
-                ("DevOps Expert","Server ops, Docker, K8s, CI/CD","wrench","You are a DevOps expert.",1),
-                ("Security Expert","Cybersecurity and penetration testing","lock","You are a security expert. Answers are for reference only.",1),
-                ("Academic Assistant","Paper writing and literature review","book","You are an academic assistant.",1),
-                ("Translator","Multi-language translation support","globe","You are a professional translator.",2),
+                ("天气助手","实时天气查询，支持全国各城市天气预报","cloud-sun","你是一个天气查询助手，可以查询全国各城市的实时天气信息。",1),
+                ("音乐助手","随机音乐推荐，播放列表管理","music","你是一个音乐推荐助手，可以推荐热门歌曲和创建播放列表。",1),
+                ("新闻助手","今日热点新闻聚合，支持分类筛选","newspaper","你是一个新闻聚合助手，可以获取今日热点新闻和资讯。",1),
+                ("川哥","全能型AI助手，技术问答、学习辅导、生活帮助","robot","你是川哥，一个全能型AI助手。用四川话风格回答问题，热情友好。",1),
+                ("文案写作","专业文案创作、文章润色、翻译助手","pen","你是一个专业的文案写作助手，擅长各种文体的创作和润色。",1),
+                ("数据分析","数据查询、统计分析、可视化建议","chart","你是一个数据分析专家，擅长数据处理、统计分析和可视化建议。",1),
+                ("代码助手","编程开发助手，支持多语言代码生成和调试","laptop","你是一个编程专家，擅长Python、Java、JavaScript等语言的代码编写和调试。",1),
+                ("法律顾问","法律问题咨询，合同审查，风险评估","scales","你是一个法律顾问，擅长中国法律咨询，但请注意你的回答仅供参考。",1),
+                ("财务顾问","财务分析、投资建议、税务筹划","money","你是一个财务顾问，擅长财务分析和投资建议，但请注意你的回答仅供参考。",1),
+                ("产品经理","产品需求分析、竞品调研、PRD撰写","clipboard","你是一个产品经理，擅长需求分析、竞品分析和产品文档撰写。",1),
+                ("运维专家","服务器运维、Docker、K8s、CI/CD","wrench","你是一个运维专家，擅长Linux服务器管理、Docker容器和DevOps实践。",1),
+                ("安全专家","网络安全、渗透测试、安全审计","lock","你是一个网络安全专家，擅长安全审计和漏洞分析，但请注意你的回答仅供参考。",1),
             ]
             conn.executemany("INSERT INTO digital_employees (name,description,avatar,system_prompt,model_id) VALUES (?,?,?,?,?)", emps)
             print("[Seed] Digital employees created (12)")

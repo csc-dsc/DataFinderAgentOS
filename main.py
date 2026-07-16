@@ -31,6 +31,7 @@ from app.controllers.watch import WatchHandler
 from app.controllers.watch_source import WatchSourceHandler
 from app.controllers.model_engine import ModelEngineHandler
 from app.controllers.digital_employee import DigitalEmployeeHandler
+from app.controllers.dashboard import DashboardHandler
 from app.models.db import init_db, seed_default_data
 
 
@@ -89,6 +90,9 @@ def make_app() -> tornado.web.Application:
 
             # 数字员工
             (r"/admin/employee", DigitalEmployeeHandler),
+
+            # 数智大屏
+            (r"/admin/dashboard", DashboardHandler),
 
             # 浏览器指纹
             (r"/fp", FingerprintHandler),
